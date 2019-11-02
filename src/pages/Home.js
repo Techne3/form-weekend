@@ -3,7 +3,14 @@ import axios from 'axios';
 import PostForm from '../components/PostForm';
 
 const Home = (props) => {
-	const [ posts, setPosts ] = useState([]);
+    const [ posts, setPosts ] = useState([]);
+    const [limit, setLimit]=useState(5)
+
+    const [editingPost, setEditingPost]= useState({
+        title: '',
+        body: '',
+        id: null,
+    })
 
 	useEffect(() => {
 		axios
@@ -14,9 +21,10 @@ const Home = (props) => {
 			})
 			.catch((err) => console.log(err));
     }, []);
+
     
-    const editPost = (post) => {
-        console.log(post)
+    const editPost = (whatever) => {
+        setEditingPost(whatever)
     }
 
     const deletePost = (id) => {
@@ -28,16 +36,39 @@ const Home = (props) => {
     }
 
     const addPost=(post)=>{
-        const postUpdated=[post, ...posts];
-        setPosts(postUpdated)
+        if(post.find(p => p.id === post.id)){
+            const index = post.findIndex(p => p.id === post.id)
+            const postsUpdated = [...posts]
+            postsUpdated.splice(index, 1,post)
+            setPosts(postsUpdated)
+        }else{
+            const postsUpdated=[post, ...posts];
+            setPosts(postsUpdated)
+        }
     }
+
+
+    const getNumberOfPost =()=> {
+        axios.get(`/posts/${limit}`)
+        .then(res => setPosts(res.data))
+        .catch(err => console.log(err))
+    }
+
 
 
 	return (
 		<div>
             <div className="row">
                 <div className="col s6">
-                    <PostForm addPost={addPost} />
+                    <PostForm addPost={addPost} editingPost={editingPost} />
+                </div>
+                <div className="col s3 push-in">
+                    <p>Limit number of post</p>
+                    <input type="number" 
+                        value={limit}
+                        onChange={e => setLimit(e.target.value)}
+                    />
+                    <button onClick={getNumberOfPost} className="waves-effect waves-light btn "> Set</button>
                 </div>
             </div>
 			<div className="row">
